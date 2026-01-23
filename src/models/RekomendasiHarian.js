@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const RekomendasiHarian = sequelize.define(
     "RekomendasiHarian",
     {
-      id_rekomendasi: {
+      id_rekomendasi_harian: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -61,6 +61,12 @@ module.exports = (sequelize, DataTypes) => {
       updatedAt: "updated_at",
       indexes: [
         {
+          unique: true,
+          name: "unique_hari",
+          fields: ["anak_id", "hari_ke"],
+        },
+        {
+          name: "idx_tanggal",
           fields: ["tanggal"],
         },
       ],
@@ -76,6 +82,11 @@ module.exports = (sequelize, DataTypes) => {
     RekomendasiHarian.belongsTo(models.Anak, {
       foreignKey: "anak_id",
       as: "anak",
+      onDelete: "CASCADE",
+    });
+    RekomendasiHarian.hasMany(models.DetailMakananHarian, {
+      foreignKey: "id_rekomendasi_harian",
+      as: "detail_makanan_harian",
       onDelete: "CASCADE",
     });
   };

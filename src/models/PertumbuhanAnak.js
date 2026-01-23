@@ -86,15 +86,13 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ["anak_id", "tanggal_pencatatan"],
-        },
-        {
+          name: "idx_anak_tanggal",
           fields: ["anak_id", "tanggal_pencatatan"],
         },
       ],
     }
   );
-
+  
   // Associations
   PertumbuhanAnak.associate = (models) => {
     PertumbuhanAnak.belongsTo(models.Anak, {

@@ -177,8 +177,8 @@ CREATE TABLE detail_makanan_harian (
 
 -- 10. TABEL NUTRISI MAKANAN
 CREATE TABLE nutrisi_makanan (
-    id_nutrisi INT AUTO_INCREMENT PRIMARY KEY
-    id_detail_makanan INT NOT NULL
+    id_nutrisi INT AUTO_INCREMENT PRIMARY KEY,
+    id_detail_makanan INT NOT NULL,
     protein_gram DECIMAL(5,2),
     lemak_gram DECIMAL(5,2),
     karbohidrat_gram DECIMAL(5,2),
