@@ -74,6 +74,8 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   RekomendasiHarian.associate = (models) => {
+    console.log("Available models:", Object.keys(models));
+
     RekomendasiHarian.belongsTo(models.RencanaGiziMingguan, {
       foreignKey: "id_rencana",
       as: "rencana_gizi_mingguan",

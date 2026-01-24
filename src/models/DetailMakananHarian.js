@@ -11,9 +11,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model : "rekomendasi_harian",
-          key : "id_rekomendasi_harian"
-        }
+          model: "rekomendasi_harian",
+          key: "id_rekomendasi_harian",
+        },
       },
       urutan_makanan: {
         type: DataTypes.INTEGER,
@@ -63,16 +63,17 @@ module.exports = (sequelize, DataTypes) => {
   );
   DetailMakananHarian.associate = (models) => {
     DetailMakananHarian.belongsTo(models.RekomendasiHarian, {
-        foreignKey: "id_rekomendasi_harian",
-        as: "rekomendasi_harian",
-        onDelete: "CASCADE",
+      foreignKey: "id_rekomendasi_harian",
+      as: "rekomendasi_harian",
+      onDelete: "CASCADE",
     });
-    
+
     DetailMakananHarian.hasOne(models.NutrisiMakanan, {
       foreignKey: "id_detail_makanan",
       as: "nutrisi_makanan",
       onDelete: "CASCADE",
     });
-    
   };
+
+  return DetailMakananHarian;
 };

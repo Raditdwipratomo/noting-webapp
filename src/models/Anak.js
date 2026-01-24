@@ -89,7 +89,6 @@ module.exports = (sequelize, DataTypes) => {
     return Math.floor(this.getUmurBulan() / 12);
   };
 
-  // Associations
   Anak.associate = (models) => {
     Anak.belongsTo(models.User, {
       foreignKey: "user_id",
@@ -121,7 +120,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "CASCADE",
     });
 
-    Anak.hasMany(models.ReminderMakan, {
+    Anak.hasMany(models.ReminderMakanan, {
       foreignKey: "anak_id",
       as: "reminder",
       onDelete: "CASCADE",
