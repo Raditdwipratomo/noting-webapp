@@ -1,4 +1,5 @@
 const authService = require("../services/authService");
+const { StatusCodes } = require("http-status-codes");
 
 class AuthController {
   async register(req, res, next) {
@@ -12,7 +13,7 @@ class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(201).json({
+      res.status(StatusCodes.CREATED).json({
         success: true,
         message: "Registrasi berhasil",
         data: {
@@ -38,7 +39,7 @@ class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
-      res.json({
+      res.status(StatusCodes.OK).json({
         success: true,
         message: "Login berhasil",
         data: {
@@ -96,7 +97,7 @@ class AuthController {
         data: { user },
       });
     } catch (error) {
-      next(user);
+      next(error);
     }
   }
 
@@ -123,7 +124,6 @@ class AuthController {
         oldPassword,
         newPassword,
       );
-
       res.json({
         success: true,
         message: result.message,

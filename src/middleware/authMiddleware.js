@@ -1,3 +1,5 @@
+const authService = require("../services/authService");
+
 const authenticate = async (req, res, next) => {
   try {
     // Get token from header or cookie
