@@ -6,7 +6,7 @@ const {
   changePasswordValidation,
   loginValidation,
   registerValidation,
-} = require("../middleware/authValidation");
+} = require("../validators/authValidation");
 
 router.post("/register", registerValidation, authController.register);
 router.post("/login", loginValidation, authController.login);
