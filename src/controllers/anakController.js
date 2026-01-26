@@ -16,6 +16,7 @@ class AnakController {
         berat_badan_kg,
         tinggi_badan_cm,
         lingkar_lengan_atas_cm,
+        lingkar_kepala_cm,
       } = req.body;
 
       const anakData = {
@@ -30,6 +31,8 @@ class AnakController {
         berat_badan_kg,
         tinggi_badan_cm,
         lingkar_lengan_atas_cm,
+        lingkar_kepala_cm,
+        catatan,
       };
       const anak = await AnakService.createAnak(req.user.user_id, anakData);
 
