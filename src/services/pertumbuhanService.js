@@ -171,6 +171,21 @@ class PertumbuhanAnakService {
     };
   }
 
+  async update(pertumbuhanId, updateData) {
+    const pertumbuhan = await PertumbuhanAnak.findByPk(pertumbuhanId);
+
+    if (!pertumbuhan) {
+      throw new NotFoundError("Data pertumbuhan tidak ditemukan");
+    }
+
+    delete updateData.anak_id;
+    delete updateData.id_pertumbuhan;
+
+    await pertumbuhan.update(updateData);
+
+    return pertumbuhan;
+  }
+
   async delete(pertumbuhanId) {
     const pertumbuhan = await PertumbuhanAnak.findByPk(pertumbuhanId);
 
