@@ -1,65 +1,270 @@
-const express = require("express");
-const router = express.Router({ mergeParams: true }); // Important: mergeParams to access :anakId
-const pertumbuhanController = require("../controllers/pertumbuhanController");
-const { authenticate } = require("../middleware/authMiddleware");
+const PertumbuhanService = require("../services/pertumbuhanService");
+const AnakService = require("../services/anakService");
+const StuntingDetectionService = require("../services/stuntingDetectionService");
+const { successResponse } = require("../utils/response");
+const { StatusCodes } = require("http-status-codes");
 
-// All routes require authentication
-router.use(authenticate);
+class PertumbuhanController {
+  /**
+   * Create new growth record for a child
+   * POST /anak/:anakId/pertumbuhan
+   */
+  async create(req, res, next) {
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
 
-/**
- * @route   GET /api/anak/:anakId/pertumbuhan
- * @desc    Get all growth records for a child
- * @access  Private
- */
-router.get("/", pertumbuhanController.getAll);
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
 
-/**
- * @route   GET /api/anak/:anakId/pertumbuhan/latest
- * @desc    Get latest growth record
- * @access  Private
- */
-router.get("/latest", pertumbuhanController.getLatest);
+      // Create pertumbuhan record
+      const pertumbuhan = await PertumbuhanService.create(anakId, req.body);
 
-/**
- * @route   GET /api/anak/:anakId/pertumbuhan/chart
- * @desc    Get chart data for growth visualization
- * @access  Private
- */
-router.get("/chart", pertumbuhanController.getChartData);
+      // Auto-detect stunting status
+      const diagnosaResult = await StuntingDetectionService.detectStunting(
+        pertumbuhan,
+        anak,
+      );
 
-/**
- * @route   GET /api/anak/:anakId/pertumbuhan/statistics
- * @desc    Get growth statistics
- * @access  Private
- */
-router.get("/statistics", pertumbuhanController.getStatistics);
+      // Save diagnosa
+      await StuntingDetectionService.saveDiagnosa(
+        anakId,
+        pertumbuhan.id_pertumbuhan,
+        diagnosaResult,
+      );
 
-/**
- * @route   GET /api/anak/:anakId/pertumbuhan/:pertumbuhanId
- * @desc    Get single growth record
- * @access  Private
- */
-router.get("/:pertumbuhanId", pertumbuhanController.getById);
+      return successResponse(
+        res,
+        {
+          pertumbuhan,
+          diagnosa: diagnosaResult,
+        },
+        "Data pertumbuhan berhasil ditambahkan dan dianalisis",
+        StatusCodes.CREATED,
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 
-/**
- * @route   POST /api/anak/:anakId/pertumbuhan
- * @desc    Create new growth record
- * @access  Private
- */
-router.post("/", pertumbuhanController.create);
+  /**
+   * Get all growth records for a child
+   * GET /anak/:anakId/pertumbuhan
+   */
+  async getAll(req, res, next) {
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
+      const { limit, offset, orderBy } = req.query;
 
-/**
- * @route   PUT /api/anak/:anakId/pertumbuhan/:pertumbuhanId
- * @desc    Update growth record
- * @access  Private
- */
-router.put("/:pertumbuhanId", pertumbuhanController.update);
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
 
-/**
- * @route   DELETE /api/anak/:anakId/pertumbuhan/:pertumbuhanId
- * @desc    Delete growth record
- * @access  Private
- */
-router.delete("/:pertumbuhanId", pertumbuhanController.delete);
+      const result = await PertumbuhanService.getByAnakId(anakId, {
+        limit,
+        offset,
+        orderBy,
+      });
 
-module.exports = router;
+      return successResponse(res, result, "Data pertumbuhan berhasil diambil");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get latest growth record for a child
+   * GET /anak/:anakId/pertumbuhan/latest
+   */
+  async getLatest(req, res, next) {
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const pertumbuhan = await PertumbuhanService.getLatest(anakId);
+
+      if (!pertumbuhan) {
+        return successResponse(res, null, "Belum ada data pertumbuhan");
+      }
+
+      return successResponse(
+        res,
+        pertumbuhan,
+        "Data pertumbuhan terbaru berhasil diambil",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get chart data for growth visualization
+   * GET /anak/:anakId/pertumbuhan/chart
+   */
+  async getChartData(req, res, next) {
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
+      const { months } = req.query;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const chartData = await PertumbuhanService.getChartData(anakId, {
+        months: parseInt(months) || 12,
+      });
+
+      return successResponse(res, chartData, "Data chart berhasil diambil");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get growth statistics
+   * GET /anak/:anakId/pertumbuhan/statistics
+   */
+  async getStatistics(req, res, next) {
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const statistics = await PertumbuhanService.getStatistics(anakId);
+
+      return successResponse(
+        res,
+        statistics,
+        "Statistik pertumbuhan berhasil diambil",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get single growth record
+   * GET /anak/:anakId/pertumbuhan/:pertumbuhanId
+   */
+  async getById(req, res, next) {
+    try {
+      const { anakId, pertumbuhanId } = req.params;
+      const userId = req.user.user_id;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const pertumbuhan = await PertumbuhanService.getById(pertumbuhanId);
+
+      return successResponse(
+        res,
+        pertumbuhan,
+        "Data pertumbuhan berhasil diambil",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Update growth record
+   * PUT /anak/:anakId/pertumbuhan/:pertumbuhanId
+   */
+  async update(req, res, next) {
+    try {
+      const { anakId, pertumbuhanId } = req.params;
+      const userId = req.user.user_id;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const pertumbuhan = await PertumbuhanService.update(
+        pertumbuhanId,
+        req.body,
+      );
+
+      return successResponse(
+        res,
+        pertumbuhan,
+        "Data pertumbuhan berhasil diupdate",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Delete growth record
+   * DELETE /anak/:anakId/pertumbuhan/:pertumbuhanId
+   */
+  async delete(req, res, next) {
+    try {
+      const { anakId, pertumbuhanId } = req.params;
+      const userId = req.user.user_id;
+
+      // Verify ownership
+      const anak = await AnakService.getAnakByAnakId(anakId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const result = await PertumbuhanService.delete(pertumbuhanId);
+
+      return successResponse(res, result, "Data pertumbuhan berhasil dihapus");
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+module.exports = new PertumbuhanController();
