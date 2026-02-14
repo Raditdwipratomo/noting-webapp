@@ -1,6 +1,7 @@
 const express = require("express");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router({ mergeParams: true });
+const alergiController = require("../controllers/alergiController");
 
 router.use(authenticate);
 

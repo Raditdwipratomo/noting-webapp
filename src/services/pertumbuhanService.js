@@ -1,4 +1,4 @@
-const { where } = require("sequelize");
+const { Op } = require("sequelize");
 const {
   NotFoundError,
   BadRequestError,
@@ -55,7 +55,7 @@ class PertumbuhanAnakService {
     return pertumbuhan;
   }
 
-  async getByAnaKId(anakId, options = {}) {
+  async getByAnakId(anakId, options = {}) {
     const { limit = 10, offset = 0, orderBy = "DESC" } = options;
 
     const anak = await Anak.findByPk(anakId);
@@ -127,7 +127,7 @@ class PertumbuhanAnakService {
 
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setMonth(startDate.getMonth - months);
+    startDate.setMonth(startDate.getMonth() - months);
 
     const pertumbuhanRecords = await PertumbuhanAnak.findAll({
       where: {
@@ -142,6 +142,7 @@ class PertumbuhanAnakService {
         "berat_badan_kg",
         "tinggi_badan_cm",
         "lingkar_lengan_atas_cm",
+        "lingkar_kepala_cm",
         "kategori",
       ],
     });

@@ -94,6 +94,33 @@ class AlergiController {
       next(error);
     }
   }
+
+  async getSummary(req, res, next) {
+  try {
+    const { anakId } = req.params;
+    const userId = req.user.user_id;
+
+    const anak = await AnakService.getAnakByAnakId(anakId);
+
+    if (anak.user_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Anda tidak memiliki akses ke data anak ini",
+      });
+    }
+
+    const summary = await AlergiService.getSummary(anakId);
+
+    return successResponse(
+      res,
+      summary,
+      "Ringkasan alergi berhasil diambil"
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
 }
 
 module.exports = new AlergiController();

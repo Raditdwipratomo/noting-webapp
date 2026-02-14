@@ -64,7 +64,7 @@ CREATE TABLE standar_who (
     tb_minus_3sd DECIMAL(5,2) COMMENT 'Z-score -3SD (sangat pendek)',
     tb_minus_2sd DECIMAL(5,2) COMMENT 'Z-score -2SD (pendek/stunting)',
     tb_median DECIMAL(5,2) COMMENT 'Z-score 0 (median)',
-    tb_plus_2sd DECIMAL(5,2) COMMENT 'Z-score +2SD, (tinggi)'
+    tb_plus_2sd DECIMAL(5,2) COMMENT 'Z-score +2SD, (tinggi)',
     tb_plus_3sd DECIMAL(5,2) COMMENT 'Z-score +3SD (sangat tinggi)',
     
     -- ========================================
@@ -141,7 +141,7 @@ CREATE TABLE rencana_gizi_mingguan (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (anak_id) REFERENCES anak(anak_id) ON DELETE CASCADE,
     INDEX idx_anak_minggu (anak_id, minggu_ke),
-    INDEX idx_status (status)
+    INDEX idx_is_completed (is_completed)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. TABEL REKOMENDASI HARIAN
@@ -240,3 +240,8 @@ CREATE TABLE alergi_anak (
     FOREIGN KEY (anak_id) REFERENCES anak(anak_id) ON DELETE CASCADE,
     INDEX idx_anak (anak_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE alergi_anak
+ADD COLUMN updated_at TIMESTAMP 
+DEFAULT CURRENT_TIMESTAMP 
+ON UPDATE CURRENT_TIMESTAMP;
