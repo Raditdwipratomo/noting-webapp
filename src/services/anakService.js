@@ -1,94 +1,130 @@
-const { NotFoundError } = require("../middleware/errorHandler");
+const { NotFoundError, ForbiddenError } = require("../middleware/errors");
 const { Anak } = require("../models");
 
 class AnakService {
+  /**
+   * Validate if user owns the child record
+   * @param {number} anakId - The ID of the child
+   * @param {number} userId - The ID of the user
+   * @returns {Promise<Object>} Child record if validation passes
+   * @throws {NotFoundError} If child not found
+   * @throws {ForbiddenError} If user doesn't own the child
+   */
+  async validateOwnership(anakId, userId) {
+    const anak = await Anak.findByPk(anakId);
+
+    console.log("anakIdUser:", anak.user_id, "user id", userId);
+
+    if (!anak) {
+      throw new NotFoundError("Anak tidak ditemukan");
+    }
+
+    if (anak.user_id !== userId) {
+      throw new ForbiddenError("Anda tidak memiliki akses ke data anak ini");
+    }
+
+    return anak;
+  }
+
+  /**
+   * Create a new child record
+   * @param {number} userId - The ID of the user
+   * @param {Object} anakData - Child data to create
+   * @returns {Promise<Object>} Created child record
+   */
   async createAnak(userId, anakData) {
-    try {
-      const {
-        nama_anak,
-        jenis_kelamin,
-        tanggal_lahir,
-        foto_profil,
-        status_aktif,
-      } = anakData;
+    const {
+      nama_anak,
+      jenis_kelamin,
+      tanggal_lahir,
+      foto_profil,
+      status_aktif,
+    } = anakData;
 
-      const createdAnak = await Anak.create({
-        user_id: userId,
-        nama_anak,
-        jenis_kelamin,
-        tanggal_lahir,
-        foto_profil,
-        status_aktif,
-      });
+    const createdAnak = await Anak.create({
+      user_id: userId,
+      nama_anak,
+      jenis_kelamin,
+      tanggal_lahir,
+      foto_profil,
+      status_aktif,
+    });
 
-      return createdAnak.toJSON();
-    } catch (error) {
-      throw error;
-    }
+    return createdAnak.toJSON();
   }
 
-  async getAnakByAnakId(anakId) {
-    try {
-      const anak = await Anak.findByPk(anakId);
+  /**
+   * Get all children for a user, ordered by creation date
+   * @param {number} userId - The ID of the user
+   * @returns {Promise<Array>} List of children
+   */
+  async getAllAnakByUserId(userId) {
+    const anakList = await Anak.findAll({
+      where: { user_id: userId },
+      order: [["created_at", "DESC"]],
+    });
 
-      if (!anak) {
-        throw new NotFoundError("Anak tidak ditemukan", 404);
-      }
-
-      return anak;
-    } catch (error) {
-      throw error;
-    }
+    return anakList;
   }
 
+  /**
+   * Get a child by their ID with ownership validation
+   * @param {number} anakId - The ID of the child
+   * @param {number} userId - The ID of the user (for ownership check)
+   * @returns {Promise<Object>} Child record
+   * @throws {NotFoundError} If child not found
+   * @throws {ForbiddenError} If user doesn't own the child
+   */
+  async getAnakByAnakId(anakId, userId) {
+    const anak = await this.validateOwnership(anakId, userId);
+    return anak.toJSON();
+  }
+
+  /**
+   * Get all children for a user
+   * @param {number} userId - The ID of the user
+   * @returns {Promise<Array>} List of children
+   */
   async getAnakByUserId(userId) {
-    try {
-      const listAnak = await Anak.findAll({
-        where: {
-          user_id: userId,
-        },
-      });
+    const listAnak = await Anak.findAll({
+      where: { user_id: userId },
+    });
 
-      if (!listAnak) {
-        throw new NotFoundError("Anak tidak ada", 404);
-      }
-
-      return listAnak;
-    } catch (error) {
-      throw error;
+    // Note: findAll returns empty array, not null
+    if (listAnak.length === 0) {
+      throw new NotFoundError("Anak tidak ada");
     }
+
+    return listAnak;
   }
 
-  async updateAnak(anakId, updateData) {
-    try {
-      const selectedAnak = await Anak.findByPk(anakId);
-
-      if (!selectedAnak) {
-        throw new NotFoundError("Anak tidak ada", 404);
-      }
-
-      await selectedAnak.update(updateData);
-
-      return selectedAnak.toJSON();
-    } catch (error) {
-      throw error;
-    }
+  /**
+   * Update a child's information with ownership validation
+   * @param {number} anakId - The ID of the child
+   * @param {number} userId - The ID of the user (for ownership check)
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>} Updated child record
+   * @throws {NotFoundError} If child not found
+   * @throws {ForbiddenError} If user doesn't own the child
+   */
+  async updateAnak(anakId, userId, updateData) {
+    const anak = await this.validateOwnership(anakId, userId);
+    await anak.update(updateData);
+    return anak.toJSON();
   }
 
-  async deleteAnak(anakId) {
-    try {
-      const anak = await Anak.findByPk(anakId);
-
-      if (!anak) {
-        throw new NotFoundError("Anak tidak ditemukan", 404);
-      }
-
-      await anak.destroy();
-
-      return anak;
-    } catch (error) {
-      throw error;
-    }
+  /**
+   * Delete a child record with ownership validation
+   * @param {number} anakId - The ID of the child
+   * @param {number} userId - The ID of the user (for ownership check)
+   * @returns {Promise<Object>} Deleted child record
+   * @throws {NotFoundError} If child not found
+   * @throws {ForbiddenError} If user doesn't own the child
+   */
+  async deleteAnak(anakId, userId) {
+    const anak = await this.validateOwnership(anakId, userId);
+    await anak.destroy();
+    return anak.toJSON();
   }
 }
 

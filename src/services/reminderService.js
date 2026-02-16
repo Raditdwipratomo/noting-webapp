@@ -2,7 +2,7 @@ const {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
-} = require("../middleware/errorHandler");
+} = require("../middleware/errors");
 const { ReminderMakanan, Anak, DetailMakananHarian } = require("../models");
 
 class ReminderService {

@@ -2,7 +2,7 @@ const {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
-} = require("../middleware/errorHandler");
+} = require("../middleware/errors");
 const { AlergiAnak, Anak } = require("../models");
 
 class AlergiService {

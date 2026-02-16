@@ -62,9 +62,11 @@ class PertumbuhanController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
       const { limit, offset, orderBy } = req.query;
-
+      
+      
       // Verify ownership
       const anak = await AnakService.getAnakByAnakId(anakId);
+      console.log(anak, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,

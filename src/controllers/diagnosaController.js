@@ -44,7 +44,7 @@ class DiagnosaController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -78,7 +78,7 @@ class DiagnosaController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -132,7 +132,7 @@ class DiagnosaController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,

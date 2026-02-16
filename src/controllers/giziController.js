@@ -9,6 +9,7 @@ const {
   DetailMakananHarian,
   RencanaGiziMingguan,
   RekomendasiHarian,
+  Anak,
 } = require("../models");
 const GiziRecommendationService = require("../services/giziRecommendationService");
 
@@ -19,10 +20,14 @@ class GiziController {
    */
   async generateRencana(req, res, next) {
     try {
+      console.log("test");
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
+      const anakInstance = await Anak.findByPk(anak.anak_id);
+      const usiaBulan = anakInstance.getUmurBulan();
 
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
@@ -61,7 +66,7 @@ class GiziController {
 
       const pertumbuhanWithAge = {
         ...latestPertumbuhan.toJSON(),
-        usia_bulan: anak.getUmurBulan(),
+        usia_bulan: usiaBulan,
       };
 
       const rencanaGizi =
@@ -71,7 +76,9 @@ class GiziController {
           diagnosisResult,
         );
 
-      const savedRencana = await GiziRecommendationService.savedRencana(
+      console.log("rencana data", rencanaGizi);
+
+      const savedRencana = await GiziRecommendationService.saveRencanaGizi(
         anakId,
         rencanaGizi,
       );
@@ -91,26 +98,28 @@ class GiziController {
         "Rencana gizi mingguan berhasil dibuat oleh AI",
         StatusCodes.CREATED,
       );
-    } catch (error) {} // Handle AI-specific errors with appropriate status codes
-    if (error.message.includes("rate limit")) {
-      return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
-        success: false,
-        message: error.message,
-      });
-    }
-    if (error.message.includes("Konfigurasi AI")) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        message: "Layanan AI tidak tersedia. Silakan hubungi administrator.",
-      });
-    }
-    if (error.message.includes("Gagal memproses respons AI")) {
-      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-        success: false,
-        message: "AI menghasilkan respons yang tidak valid. Silakan coba lagi.",
-      });
-    }
-    next(error);
+    } catch (error) {
+      if (error.message.includes("rate limit")) {
+        return res.status(StatusCodes.TOO_MANY_REQUESTS).json({
+          success: false,
+          message: error.message,
+        });
+      }
+      if (error.message.includes("Konfigurasi AI")) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: "Layanan AI tidak tersedia. Silakan hubungi administrator.",
+        });
+      }
+      if (error.message.includes("Gagal memproses respons AI")) {
+        return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+          success: false,
+          message:
+            "AI menghasilkan respons yang tidak valid. Silakan coba lagi.",
+        });
+      }
+      next(error);
+    } // Handle AI-specific errors with appropriate status codes
   }
 
   /**

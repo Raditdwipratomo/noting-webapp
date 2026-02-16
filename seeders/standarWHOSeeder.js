@@ -368,6 +368,7 @@ module.exports = {
     ];
 
     const formatData = (dataset, gender) => {
+      const now = new Date();
       return dataset.map((row) => {
         const [bulan, tb, bb, lk, lila] = row;
         return {
@@ -397,6 +398,8 @@ module.exports = {
           lila_median: lila[2],
           lila_plus_2sd: lila[3],
           lila_plus_3sd: lila[4],
+
+         
         };
       });
     };
@@ -406,7 +409,7 @@ module.exports = {
       ...formatData(girlsData, "P"),
     ];
 
-    return queryInterface.bulkInsert("standar_who", allData, {});
+    return queryInterface.bulkInsert("standar_who", allData);
   },
 
   down: async (queryInterface, Sequelize) => {

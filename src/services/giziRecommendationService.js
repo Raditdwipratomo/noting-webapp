@@ -10,11 +10,7 @@ const {
 const groq = new Groq({ apiKey: aiConfig.groq.apiKey });
 
 class GiziRecommendationService {
-  static async generateRencanaMingguan(
-    anakId,
-    pertumbuhanData,
-    diagnosisResult,
-  ) {
+  async generateRencanaMingguan(anakId, pertumbuhanData, diagnosisResult) {
     try {
       const alergi = await AlergiAnak.findAll({ where: { anak_id: anakId } });
 
@@ -29,6 +25,7 @@ class GiziRecommendationService {
       const aiResponse = await this.callGroqAI(prompt);
 
       const rencanaGizi = this.parseAIResponse(aiResponse);
+
 
       return rencanaGizi;
     } catch (error) {}
@@ -226,7 +223,7 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
     }
   }
 
-  static async saveRencanaGizi(anakId, rencanaData) {
+  async saveRencanaGizi(anakId, rencanaData) {
     try {
       const today = new Date();
       const tanggalSelesai = new Date(today);

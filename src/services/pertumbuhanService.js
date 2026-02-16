@@ -3,7 +3,7 @@ const {
   NotFoundError,
   BadRequestError,
   ForbiddenError,
-} = require("../middleware/errorHandler");
+} = require("../middleware/errors");
 const { PertumbuhanAnak, Anak } = require("../models");
 
 class PertumbuhanAnakService {

@@ -7,7 +7,7 @@ const { authenticate } = require("../middleware/authMiddleware");
 const pertumbuhanRoutes = require("./pertumbuhanRoutes");
 const diagnosaRoutes = require("./diagnosaRoutes");
 const giziRoutes = require("./giziRoutes");
-const reminderRoutes = require("./reminderRoutes");
+// const reminderRoutes = require("./reminderRoutes");
 const alergiRoutes = require("./alergiRoutes");
 
 // All routes require authentication
@@ -39,7 +39,7 @@ router.get("/:anakId", anakController.getAnakByAnakId);
  * @desc    Get child dashboard summary
  * @access  Private
  */
-router.get("/:anakId/dashboard", anakController.getDashboard);
+// router.get("/:anakId/dashboard", anakController.getDashboard);
 
 /**
  * @route   PUT /api/anak/:anakId
@@ -81,7 +81,7 @@ router.use("/:anakId/gizi", giziRoutes);
  * Reminder Routes
  * /api/anak/:anakId/reminder/*
  */
-router.use("/:anakId/reminder", reminderRoutes);
+// router.use("/:anakId/reminder", reminderRoutes);
 
 /**
  * Alergi (Allergy Management) Routes
