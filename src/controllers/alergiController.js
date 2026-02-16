@@ -9,7 +9,7 @@ class AlergiController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -35,7 +35,7 @@ class AlergiController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
 
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
@@ -57,7 +57,7 @@ class AlergiController {
       const { anakId, alergiId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -78,7 +78,7 @@ class AlergiController {
       const { anakId, alergiId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
 
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
@@ -96,31 +96,26 @@ class AlergiController {
   }
 
   async getSummary(req, res, next) {
-  try {
-    const { anakId } = req.params;
-    const userId = req.user.user_id;
+    try {
+      const { anakId } = req.params;
+      const userId = req.user.user_id;
 
-    const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
 
-    if (anak.user_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: "Anda tidak memiliki akses ke data anak ini",
-      });
+      if (anak.user_id !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const summary = await AlergiService.getSummary(anakId);
+
+      return successResponse(res, summary, "Ringkasan alergi berhasil diambil");
+    } catch (error) {
+      next(error);
     }
-
-    const summary = await AlergiService.getSummary(anakId);
-
-    return successResponse(
-      res,
-      summary,
-      "Ringkasan alergi berhasil diambil"
-    );
-  } catch (error) {
-    next(error);
   }
-}
-
 }
 
 module.exports = new AlergiController();

@@ -15,7 +15,7 @@ class DiagnosaController {
       const userId = req.user.user_id;
       const { limit } = req.query;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,

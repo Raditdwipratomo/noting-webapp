@@ -16,19 +16,21 @@ class GiziRecommendationService {
 
       const daftarAlergan = alergi.map((a) => a.nama_alergen.toLowerCase());
 
-      const prompt = this.buildPrompt(
+      const prompt = GiziRecommendationService.buildPrompt(
         pertumbuhanData,
         diagnosisResult,
         daftarAlergan,
       );
 
-      const aiResponse = await this.callGroqAI(prompt);
+      const aiResponse = await GiziRecommendationService.callGroqAI(prompt);
 
-      const rencanaGizi = this.parseAIResponse(aiResponse);
-
+      const rencanaGizi = GiziRecommendationService.parseAIResponse(aiResponse);
 
       return rencanaGizi;
-    } catch (error) {}
+    } catch (error) {
+      console.error("generateRencanaMingguan error:", error.message);
+      throw error; // 🔥 WAJIB
+    }
   }
 
   static buildPrompt(pertumbuhanData, diagnosisResult, daftarAlergen) {
@@ -224,25 +226,25 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
   }
 
   async saveRencanaGizi(anakId, rencanaData) {
+    if (
+      !rencanaData ||
+      !Array.isArray(rencanaData.menu_mingguan) ||
+      rencanaData.menu_mingguan.length !== 7
+    ) {
+      throw new Error("menu_mingguan harus berupa array 7 hari");
+    }
+
     try {
       const today = new Date();
       const tanggalSelesai = new Date(today);
       tanggalSelesai.setDate(today.getDate() + 7);
 
-      // Cek apakah sudah ada rencana aktif
       const existingPlan = await RencanaGiziMingguan.findOne({
-        where: {
-          anak_id: anakId,
-          is_completed: false,
-        },
+        where: { anak_id: anakId, is_completed: false },
       });
 
-      let mingguKe = 1;
-      if (existingPlan) {
-        mingguKe = existingPlan.minggu_ke + 1;
-      }
+      const mingguKe = existingPlan ? existingPlan.minggu_ke + 1 : 1;
 
-      // Create rencana mingguan
       const rencana = await RencanaGiziMingguan.create({
         anak_id: anakId,
         minggu_ke: mingguKe,
@@ -252,23 +254,25 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
         is_completed: false,
       });
 
-      // Create rekomendasi harian
       for (let i = 0; i < 7; i++) {
         const tanggalHari = new Date(today);
         tanggalHari.setDate(today.getDate() + i);
 
+        const menuHari = rencanaData.menu_mingguan[i];
+        if (!menuHari || !Array.isArray(menuHari.makanan)) {
+          throw new Error(`Menu hari ke-${i + 1} tidak valid`);
+        }
+
         const rekomendasiHarian = await RekomendasiHarian.create({
           id_rencana: rencana.id_rencana,
           anak_id: anakId,
-          hari_ke: (mingguKe - 1) * 7 + (i + 1),
           tanggal: tanggalHari,
+          hari_ke: i + 1,
           progress_harian: 0,
           jumlah_makanan_total: 7,
           status: i === 0 ? "sedang_berjalan" : "belum_dimulai",
         });
 
-        // Create detail makanan harian
-        const menuHari = rencanaData.menu_mingguan[i];
         for (const makanan of menuHari.makanan) {
           await DetailMakananHarian.create({
             id_rekomendasi_harian: rekomendasiHarian.id_rekomendasi_harian,
@@ -281,7 +285,8 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
 
       return rencana;
     } catch (error) {
-      throw new Error(`Error saving nutrition plan: ${error.message}`);
+      console.error("saveRencanaGizi error:", error.message);
+      throw error;
     }
   }
 }

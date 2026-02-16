@@ -15,7 +15,7 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -62,10 +62,10 @@ class PertumbuhanController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
       const { limit, offset, orderBy } = req.query;
-      
-      
+
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       console.log(anak, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
@@ -96,7 +96,8 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -131,7 +132,8 @@ class PertumbuhanController {
       const { months } = req.query;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -159,7 +161,8 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -189,7 +192,8 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -219,7 +223,8 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -252,7 +257,8 @@ class PertumbuhanController {
       const userId = req.user.user_id;
 
       // Verify ownership
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,

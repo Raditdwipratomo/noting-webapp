@@ -12,6 +12,7 @@ const {
   Anak,
 } = require("../models");
 const GiziRecommendationService = require("../services/giziRecommendationService");
+const { Op } = require("sequelize");
 
 class GiziController {
   /**
@@ -131,7 +132,7 @@ class GiziController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -149,7 +150,7 @@ class GiziController {
             include: [
               {
                 model: DetailMakananHarian,
-                as: "detail_makanan",
+                as: "detail_makanan_harian",
               },
             ],
           },
@@ -180,7 +181,7 @@ class GiziController {
       const userId = req.user.user_id;
       const { limit = 10, offset = 0 } = req.query;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -221,7 +222,7 @@ class GiziController {
       const { anakId, hariKe } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -231,7 +232,7 @@ class GiziController {
 
       const rekomendasi = await RekomendasiHarian.findOne({
         where: { anak_id: anakId, hari_ke: parseInt(hariKe) },
-        include: [{ model: DetailMakananHarian, as: "detail_makanan" }],
+        include: [{ model: DetailMakananHarian, as: "detail_makanan_harian" }],
       });
 
       if (!rekomendasi) {
@@ -260,7 +261,7 @@ class GiziController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -268,12 +269,20 @@ class GiziController {
         });
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
 
       const rekomendasi = await RekomendasiHarian.findOne({
-        where: { anak_id: anakId, tanggal: today },
-        include: [{ model: DetailMakananHarian, as: "detail_makanan" }],
+        where: {
+          anak_id: anakId,
+          tanggal: {
+            [Op.between]: [start, end],
+          },
+        },
+        include: [{ model: DetailMakananHarian, as: "detail_makanan_harian" }],
       });
 
       if (!rekomendasi) {
@@ -304,7 +313,7 @@ class GiziController {
       const userId = req.user.user_id;
       const { status_konsumsi } = req.body;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -373,7 +382,7 @@ class GiziController {
       const { anakId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
@@ -395,7 +404,7 @@ class GiziController {
         include: [
           {
             model: DetailMakananHarian,
-            as: "detail_makanan",
+            as: "detail_makanan_harian",
           },
         ],
         order: [["hari_ke", "ASC"]],
@@ -405,10 +414,10 @@ class GiziController {
       let totalKonsumsi = 0;
 
       const dailyProgress = rekomendasiHarian.map((rh) => {
-        const completed = rh.detail_makanan.filter(
+        const completed = rh.detail_makanan_harian.filter(
           (d) => d.status_konsumsi,
         ).length;
-        const total = rh.detail_makanan_length;
+        const total = rh.detail_makanan_harian.length;
         totalMakanan += total;
         totalKonsumsi += completed;
 
@@ -451,7 +460,7 @@ class GiziController {
       const { anakId, rencanaId } = req.params;
       const userId = req.user.user_id;
 
-      const anak = await AnakService.getAnakByAnakId(anakId);
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
       if (anak.user_id !== userId) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
