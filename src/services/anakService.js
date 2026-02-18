@@ -13,8 +13,6 @@ class AnakService {
   async validateOwnership(anakId, userId) {
     const anak = await Anak.findByPk(anakId);
 
-    console.log("anakIdUser:", anak.user_id, "user id", userId);
-
     if (!anak) {
       throw new NotFoundError("Anak tidak ditemukan");
     }

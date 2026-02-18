@@ -21,6 +21,8 @@ class StuntingDetectionService {
         usiaBulan: usiaBulan,
       });
 
+      console.log("z score: ", zScores);
+
       // Tentukan status stunting berdasarkan Z-Score tinggi badan
       const statusStunting = this.determineStuntingStatus(
         zScores.tinggi_badan.zScore,

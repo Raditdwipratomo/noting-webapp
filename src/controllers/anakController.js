@@ -56,6 +56,8 @@ class AnakController {
         anak,
       );
 
+      console.log("diagnosis: ", diagnosaResult);
+
       // Save diagnosis
       await StuntingDetectionService.saveDiagnosa(
         anak.anak_id,

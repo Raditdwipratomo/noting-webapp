@@ -232,6 +232,8 @@ class PertumbuhanAnakService {
       order: [["tanggal_pencatatan", "ASC"]],
     });
 
+    console.log("record", records);
+
     if (records.length === 0) {
       return {
         total_records: 0,
@@ -269,30 +271,30 @@ class PertumbuhanAnakService {
           ).toFixed(2),
         };
       }
-
-      return {
-        total_records: records.length,
-        first_record: {
-          tanggal: firstRecord.tanggal_pencatatan,
-          berat: firstRecord.berat_badan_kg,
-          tinggi: firstRecord.tinggi_badan_cm,
-        },
-        lastRecord: {
-          tanggal: lastRecord.tanggal_pencatatan,
-          berat: lastRecord.berat_badan_kg,
-          tinggi: lastRecord.tinggi_badan_cm,
-        },
-        total_growth: {
-          berat: (
-            lastRecord.berat_badan_kg - firstRecord.berat_badan_kg
-          ).toFixed(2),
-          tinggi: (
-            lastRecord.tinggi_badan_cm - firstRecord.tinggi_badan_cm
-          ).toFixed(2),
-        },
-        growth_rate: growthRate,
-      };
     }
+
+    return {
+      total_records: records.length,
+      first_record: {
+        tanggal: firstRecord.tanggal_pencatatan,
+        berat: firstRecord.berat_badan_kg,
+        tinggi: firstRecord.tinggi_badan_cm,
+      },
+      last_record: {
+        tanggal: lastRecord.tanggal_pencatatan,
+        berat: lastRecord.berat_badan_kg,
+        tinggi: lastRecord.tinggi_badan_cm,
+      },
+      total_growth: {
+        berat: (lastRecord.berat_badan_kg - firstRecord.berat_badan_kg).toFixed(
+          2,
+        ),
+        tinggi: (
+          lastRecord.tinggi_badan_cm - firstRecord.tinggi_badan_cm
+        ).toFixed(2),
+      },
+      growth_rate: growthRate,
+    };
   }
 }
 

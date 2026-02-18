@@ -60,6 +60,7 @@ class PertumbuhanController {
   async getAll(req, res, next) {
     try {
       const { anakId } = req.params;
+      console.log("Test", req.user.user_id);
       const userId = req.user.user_id;
       const { limit, offset, orderBy } = req.query;
 
@@ -171,6 +172,8 @@ class PertumbuhanController {
       }
 
       const statistics = await PertumbuhanService.getStatistics(anakId);
+
+      console.log("statistik", statistics);
 
       return successResponse(
         res,
