@@ -64,12 +64,17 @@ const errorHandler = (err, req, res, next) => {
     error.errorCode = "FOREIGN_KEY_CONSTRAINT";
   }
 
+  // if (err.name === "SequelizeDatabaseError") {
+  //   error.message = "Database error";
+  //   error.statusCode = 500;
+  //   error.errorCode = "DATABASE_ERROR";
+  //   error.isOperational = false;
+  // }
   if (err.name === "SequelizeDatabaseError") {
-    error.message = "Database error";
-    error.statusCode = 500;
-    error.errorCode = "DATABASE_ERROR";
-    error.isOperational = false;
-  }
+  error.message = err.parent?.sqlMessage || err.message;
+  error.statusCode = 500;
+  error.errorCode = "DATABASE_ERROR";
+}
 
   // Handle JWT Errors
   if (err.name === "JsonWebTokenError") {

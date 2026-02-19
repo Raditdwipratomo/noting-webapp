@@ -9,6 +9,7 @@ const diagnosaRoutes = require("./diagnosaRoutes");
 const giziRoutes = require("./giziRoutes");
 // const reminderRoutes = require("./reminderRoutes");
 const alergiRoutes = require("./alergiRoutes");
+const reminderRoutes = require("./remainderRoutes");
 
 // All routes require authentication
 router.use(authenticate);
@@ -81,7 +82,7 @@ router.use("/:anakId/gizi", giziRoutes);
  * Reminder Routes
  * /api/anak/:anakId/reminder/*
  */
-// router.use("/:anakId/reminder", reminderRoutes);
+router.use("/:anakId/reminder", reminderRoutes);
 
 /**
  * Alergi (Allergy Management) Routes

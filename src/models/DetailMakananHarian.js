@@ -73,6 +73,12 @@ module.exports = (sequelize, DataTypes) => {
       as: "nutrisi_makanan",
       onDelete: "CASCADE",
     });
+
+    DetailMakananHarian.belongsTo(models.ReminderMakanan, {
+    foreignKey: "id_reminder",
+    as: "reminder"
+  });
+
   };
 
   return DetailMakananHarian;

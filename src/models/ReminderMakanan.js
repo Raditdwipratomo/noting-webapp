@@ -66,5 +66,12 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  ReminderMakanan.associate = (models) => {
+  ReminderMakanan.hasMany(models.DetailMakananHarian, {
+    foreignKey: "id_reminder",
+    as: "detail_makanan"
+  });
+};
+
   return ReminderMakanan;
 };
