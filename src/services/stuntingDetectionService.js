@@ -1,12 +1,15 @@
 const ZScoreCalculator = require("./zScoreCalculator");
 const { RiwayatDiagnosa } = require("../models");
+const { Anak } = require("../models");
 
 class StuntingDetectionService {
   /**
    * Deteksi status stunting berdasarkan data pertumbuhan
    */
-  static async detectStunting(pertumbuhanData, anak) {
+  static async detectStunting(pertumbuhanData, anakData) {
     try {
+      const anak = await Anak.findByPk(anakData.anak_id);
+
       const usiaBulan = anak.getUmurBulan();
 
       // Hitung Z-Scores
@@ -17,6 +20,8 @@ class StuntingDetectionService {
         jenisKelamin: anak.jenis_kelamin,
         usiaBulan: usiaBulan,
       });
+
+      console.log("z score: ", zScores);
 
       // Tentukan status stunting berdasarkan Z-Score tinggi badan
       const statusStunting = this.determineStuntingStatus(
@@ -189,24 +194,136 @@ class StuntingDetectionService {
    */
   static async saveDiagnosa(anakId, pertumbuhanId, diagnosisResult) {
     try {
-      const diagnosa = await RiwayatDiagnosa.create({
+      // Validate input parameters
+      if (!anakId || !pertumbuhanId) {
+        throw new BadRequestError(
+          "ID anak dan pertumbuhan harus diisi",
+          "MISSING_REQUIRED_IDS",
+        );
+      }
+
+      console.log("diagnosis result", diagnosisResult);
+
+      if (!diagnosisResult || typeof diagnosisResult !== "object") {
+        throw new BadRequestError(
+          "Data diagnosis tidak valid",
+          "INVALID_DIAGNOSIS_DATA",
+        );
+      }
+
+      // Validate required fields in diagnosisResult
+      if (!diagnosisResult.status_stunting) {
+        throw new BadRequestError(
+          "Status stunting harus diisi",
+          "MISSING_STATUS_STUNTING",
+        );
+      }
+
+      // Prepare data for saving
+      const diagnosaData = {
         anak_id: anakId,
         pertumbuhan_id: pertumbuhanId,
         tanggal_diagnosa: new Date(),
         status_stunting: diagnosisResult.status_stunting,
-        z_score_tinggi_badan: diagnosisResult.z_score_tinggi_badan,
-        z_score_berat_badan: diagnosisResult.z_score_berat_badan,
-        z_score_berat_tinggi: diagnosisResult.z_score_lila,
-        rekomendasi_tindakan: JSON.stringify({
-          tindakan: diagnosisResult.rekomendasi_tindakan,
-          gizi: diagnosisResult.rekomendasi_gizi,
-        }),
-        catatan: diagnosisResult.catatan.join("\n"),
+        z_score_tinggi_badan: diagnosisResult.z_score_tinggi_badan || null,
+        z_score_berat_badan: diagnosisResult.z_score_berat_badan || null,
+        z_score_berat_tinggi: diagnosisResult.z_score_lila || null,
+        rekomendasi_tindakan: diagnosisResult.rekomendasi_tindakan
+          ? JSON.stringify({
+              tindakan: diagnosisResult.rekomendasi_tindakan,
+              gizi: diagnosisResult.rekomendasi_gizi || null,
+            })
+          : null,
+        catatan: Array.isArray(diagnosisResult.catatan)
+          ? diagnosisResult.catatan.join("\n")
+          : diagnosisResult.catatan || null,
+      };
+
+      // Check if diagnosis already exists for this anak_id and pertumbuhan_id
+      const existingDiagnosa = await RiwayatDiagnosa.findOne({
+        where: {
+          anak_id: anakId,
+          pertumbuhan_id: pertumbuhanId,
+        },
       });
 
-      return diagnosa;
+      let savedDiagnosa;
+
+      if (existingDiagnosa) {
+        // Update existing diagnosis
+        await existingDiagnosa.update({
+          status_stunting: diagnosaData.status_stunting,
+          z_score_tinggi_badan: diagnosaData.z_score_tinggi_badan,
+          z_score_berat_badan: diagnosaData.z_score_berat_badan,
+          z_score_berat_tinggi: diagnosaData.z_score_berat_tinggi,
+          rekomendasi_tindakan: diagnosaData.rekomendasi_tindakan,
+          catatan: diagnosaData.catatan,
+          tanggal_diagnosa: new Date(), // Update timestamp
+        });
+
+        savedDiagnosa = existingDiagnosa;
+      } else {
+        // Create new diagnosis
+        savedDiagnosa = await RiwayatDiagnosa.create(diagnosaData);
+      }
+
+      return savedDiagnosa.toJSON();
     } catch (error) {
-      throw new Error(`Error saving diagnosa: ${error.message}`);
+      console.error("Error saving diagnosa:", {
+        error: error.message,
+        anakId,
+        pertumbuhanId,
+        stack: error.stack,
+      });
+
+      // Handle Sequelize Unique Constraint Error
+      if (error.name === "SequelizeUniqueConstraintError") {
+        throw new ConflictError(
+          "Diagnosis untuk data pertumbuhan ini sudah ada",
+          "DUPLICATE_DIAGNOSIS",
+        );
+      }
+
+      // Handle Sequelize Validation Error
+      if (error.name === "SequelizeValidationError") {
+        const validationErrors = error.errors.map((e) => ({
+          field: e.path,
+          message: e.message,
+          value: e.value,
+        }));
+        throw new ValidationError(
+          "Validasi data diagnosis gagal",
+          validationErrors,
+          "DIAGNOSIS_VALIDATION_ERROR",
+        );
+      }
+
+      // Handle Foreign Key Constraint Error
+      if (error.name === "SequelizeForeignKeyConstraintError") {
+        throw new BadRequestError(
+          "ID anak atau pertumbuhan tidak valid",
+          "INVALID_FOREIGN_KEY",
+        );
+      }
+
+      // Handle Database Error
+      if (error.name === "SequelizeDatabaseError") {
+        throw new DatabaseError(
+          "Terjadi kesalahan database saat menyimpan diagnosis",
+          "DATABASE_ERROR",
+        );
+      }
+
+      // If it's already a custom AppError, re-throw it
+      if (error.statusCode) {
+        throw error;
+      }
+
+      // Wrap unexpected errors
+      throw new DatabaseError(
+        `Gagal menyimpan diagnosis: ${error.message}`,
+        "SAVE_DIAGNOSIS_ERROR",
+      );
     }
   }
 

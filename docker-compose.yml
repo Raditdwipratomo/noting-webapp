@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_server_1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: radit123
+      MYSQL_DATABASE: mogipos
+    ports:
+      - "3306:3306"
+    volumes:
+      - /c/Users/Lenovo/mysql_stack/mysql/my.cnf:/etc/mysql/mysql.conf.d/my.cnf
+      - mysql_data:/var/lib/mysql
+      - /c/Users/Lenovo/mysql_stack/mogipos.sql:/docker-entrypoint-initdb.d/mogipos.sql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql_server_1
+      PMA_USER: root
+      PMA_PASSWORD: radit123
+    ports:
+      - "8000:80"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
+  mysql_config:

@@ -33,8 +33,8 @@ module.exports = (sequelize, DataTypes)=>{
                 allowNull: true,
             },
             tanggal_ditemukan:{
-                type: DataTypes.DATE,
-                allowNull: false,
+                type: DataTypes.DATEONLY,
+                allowNull: true,
             },
             created_at: {
                 type: DataTypes.DATE,

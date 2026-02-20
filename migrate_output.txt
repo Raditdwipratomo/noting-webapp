@@ -1,0 +1,8 @@
+﻿
+[4mSequelize CLI [Node: 24.11.0, CLI: 6.6.5, ORM: 6.37.7][24m
+
+Loaded configuration file "config\config.js".
+Using environment "development".
+== 20260215164000-fix-standar-who-id-auto-increment: migrating =======
+== 20260215164000-fix-standar-who-id-auto-increment: migrated (0.226s)
+

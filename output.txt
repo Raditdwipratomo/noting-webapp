@@ -1,0 +1,18 @@
+﻿Testing connection with config: {
+  username: 'root',
+  password: null,
+  database: 'stunting_prevention',
+  host: 'localhost',
+  dialect: 'mysql'
+}
+Executing (default): SELECT 1+1 AS result
+Connection has been established successfully.
+Executing (default): SHOW CREATE TABLE standar_who
+Table Schema: [
+  {
+    "Table": "standar_who",
+    "Create Table": "CREATE TABLE `standar_who` (\n  `id` int(11) NOT NULL,\n  `jenis_kelamin` enum('L','P') NOT NULL,\n  `usia_bulan` int(11) NOT NULL COMMENT 'usia dalam bulan (0-60)',\n  `tb_minus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -3SD (sangat pendek)',\n  `tb_minus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -2SD (pendek/stunting)',\n  `tb_median` decimal(5,2) DEFAULT NULL COMMENT 'Z-score 0 (median)',\n  `tb_plus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +2SD, (tinggi)',\n  `tb_plus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +3SD (sangat tinggi)',\n  `bb_minus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -3SD (gizi buruk)',\n  `bb_minus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -2SD (gizi kurang)',\n  `bb_median` decimal(5,2) DEFAULT NULL COMMENT 'Z-score 0 (median)',\n  `bb_plus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +2SD (gizi lebih)',\n  `bb_plus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +3SD (obesitas)',\n  `lk_minus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -3SD (mikrosefali berat)',\n  `lk_minus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -2SD (mikrosefali)',\n  `lk_median` decimal(5,2) DEFAULT NULL COMMENT 'Z-score 0 (median)',\n  `lk_plus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +2SD (makrosefali)',\n  `lk_plus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +3SD (makrosefali berat)',\n  `lila_minus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -3SD (malnutrisi akut berat)',\n  `lila_minus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score -2SD (malnutrisi akut)',\n  `lila_median` decimal(5,2) DEFAULT NULL COMMENT 'Z-score 0 (median)',\n  `lila_plus_2sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +2SD',\n  `lila_plus_3sd` decimal(5,2) DEFAULT NULL COMMENT 'Z-score +3SD',\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `unique_standar` (`jenis_kelamin`,`usia_bulan`),\n  UNIQUE KEY `uniq_standar_who_gender_age` (`jenis_kelamin`,`usia_bulan`),\n  KEY `idx_jk_usia` (`jenis_kelamin`,`usia_bulan`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+  }
+]
+Executing (default): SELECT * FROM standar_who LIMIT 5
+First 5 rows: []
