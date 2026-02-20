@@ -6,9 +6,6 @@ const { authenticate } = require("../middleware/authMiddleware");
 // All routes require authentication
 router.use(authenticate);
 
-// All routes require authentication
-router.use(authenticate);
-
 /**
  * @route   GET /api/anak/:anakId/reminder
  * @desc    Get all reminders for a child

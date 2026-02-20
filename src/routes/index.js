@@ -4,7 +4,6 @@ const router = express.Router();
 // Import all route modules
 const authRoutes = require("./authRoutes");
 const anakRoutes = require("./anakRoutes");
-const reminderRoutes = require("./remainderRoutes");
 
 
 /**
@@ -83,7 +82,6 @@ router.use("/auth", authRoutes);
  *   DELETE /:anakId/alergi/:id     - Delete allergy
  */
 router.use("/anak", anakRoutes);
-router.use("/:anakId/reminder", reminderRoutes);
 
 // ========================================
 // Health Check (optional)
