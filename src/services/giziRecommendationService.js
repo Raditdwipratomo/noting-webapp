@@ -4,6 +4,8 @@ const {
   RencanaGiziMingguan,
   RekomendasiHarian,
   DetailMakananHarian,
+  NutrisiMakanan,
+  ResepMakanan,
   AlergiAnak,
 } = require("../models");
 
@@ -66,6 +68,13 @@ INSTRUKSI:
 6. Variasikan menu setiap hari
 7. Jika anak stunting atau berisiko, prioritaskan makanan tinggi protein dan kalori
 8. Berikan catatan khusus berdasarkan kondisi anak
+9. PENTING UNTUK RESEP: "langkah_pembuatan" HARUS sangat mendetail, minimal 5 kalimat per langkah. Jelaskan cara memotong, durasi memasak, dan ciri-ciri makanan matang.
+10. PENTING UNTUK USIA UMUR BIKINAN: HARUS menyesuaikan BENTUK dan TEKSTUR makanan sesuai umur anak (usia_bulan):
+    - 0-5 bulan: HANYA ASI Eksklusif atau Susu Formula. JANGAN berikan makanan padat/nasi/daging sama sekali. (Resep kosongkan atau tulis "Berikan ASI/Sufor").
+    - 6-8 bulan: Makanan lumat (saring halus/puree).
+    - 9-11 bulan: Makanan lembik (cincang halus/bubur kasar).
+    - 12-23 bulan: Makanan keluarga (potongan kecil yang bisa dipegang).
+    - 24+ bulan: Makanan keluarga utuh.
 
 Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya JSON murni):
 {
@@ -98,7 +107,15 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
             "nama": "<string>",
             "porsi": "<string>",
             "kalori": <number>,
-            "protein": <number>
+            "protein": <number>,
+            "lemak": <number>,
+            "karbohidrat": <number>,
+            "resep": {
+              "waktu_persiapan": <number_in_minutes>,
+              "waktu_memasak": <number_in_minutes>,
+              "bahan_bahan": ["<string_ingredient_1>", "<string_ingredient_2>"],
+              "langkah_pembuatan": ["<step_1>", "<step_2>"]
+            }
           }
         }
       ]
@@ -147,6 +164,8 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
       if (!responseContent) {
         throw new Error("AI tidak memberikan respons yang valid");
       }
+
+      console.log("response", responseContent)
 
       return responseContent;
     } catch (error) {
@@ -252,6 +271,9 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
         tanggal_selesai: tanggalSelesai,
         progress: 0,
         is_completed: false,
+        kebutuhan_kalori_harian: rencanaData.kebutuhan_kalori_harian?.total_kalori || 0,
+        kebutuhan_nutrisi: rencanaData.kebutuhan_nutrisi || null,
+        catatan_khusus: rencanaData.catatan_khusus || null,
       });
 
       for (let i = 0; i < 7; i++) {
@@ -274,12 +296,38 @@ Respons HARUS dalam format JSON berikut (tanpa markdown, tanpa backtick, hanya J
         });
 
         for (const makanan of menuHari.makanan) {
-          await DetailMakananHarian.create({
+          const namaMakanan = makanan.menu?.nama || "";
+
+          const detail = await DetailMakananHarian.create({
             id_rekomendasi_harian: rekomendasiHarian.id_rekomendasi_harian,
             urutan_makanan: makanan.urutan,
             waktu_makan: makanan.waktu_makan,
+            nama_makanan: namaMakanan,
+            porsi: makanan.menu?.porsi || "",
+            target_kalori: makanan.target_kalori || 0,
             status_konsumsi: false,
+            gambar_url: null, // Will be generated lazily via Hugging Face when user opens detail
           });
+
+          // Create NutrisiMakanan record with AI-provided nutrition data
+          await NutrisiMakanan.create({
+            id_detail_makanan: detail.id_detail,
+            kalori_total: makanan.menu?.kalori || 0,
+            protein_gram: makanan.menu?.protein || 0,
+            lemak_gram: makanan.menu?.lemak || 0,
+            karbohidrat_gram: makanan.menu?.karbohidrat || 0,
+          });
+
+          // Create ResepMakanan record
+          if (makanan.menu?.resep) {
+            await ResepMakanan.create({
+              id_detail_makanan: detail.id_detail,
+              waktu_persiapan: makanan.menu.resep.waktu_persiapan || 0,
+              waktu_memasak: makanan.menu.resep.waktu_memasak || 0,
+              bahan_bahan: makanan.menu.resep.bahan_bahan || [],
+              langkah_pembuatan: makanan.menu.resep.langkah_pembuatan || [],
+            });
+          }
         }
       }
 

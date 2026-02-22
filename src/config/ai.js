@@ -5,7 +5,7 @@ const aiConfig = {
     apiKey: process.env.GROQ_API_KEY,
     model: "llama-3.3-70b-versatile",
     temperature: 0.7,
-    maxTokens: 8000,
+    maxTokens: 30000,
     topP: 1,
   },
 

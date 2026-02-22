@@ -36,6 +36,41 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      kebutuhan_kalori_harian: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: "Total kebutuhan kalori harian dari AI",
+      },
+      kebutuhan_nutrisi: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: "JSON kebutuhan nutrisi dari AI",
+        get() {
+          const raw = this.getDataValue("kebutuhan_nutrisi");
+          return raw ? JSON.parse(raw) : null;
+        },
+        set(value) {
+          this.setDataValue(
+            "kebutuhan_nutrisi",
+            value ? JSON.stringify(value) : null,
+          );
+        },
+      },
+      catatan_khusus: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: "JSON array catatan khusus dari AI",
+        get() {
+          const raw = this.getDataValue("catatan_khusus");
+          return raw ? JSON.parse(raw) : null;
+        },
+        set(value) {
+          this.setDataValue(
+            "catatan_khusus",
+            value ? JSON.stringify(value) : null,
+          );
+        },
+      },
       created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -80,7 +115,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     RencanaGiziMingguan.hasMany(models.RekomendasiHarian, {
-      foreignKey: "id_rencana_gizi",
+      foreignKey: "id_rencana",
       as: "rekomendasi_harian",
       onDelete: "CASCADE",
     });

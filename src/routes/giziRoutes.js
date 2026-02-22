@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const giziController = require("../controllers/giziController");
 const { authenticate } = require("../middleware/authMiddleware");
+const upload = require("../middleware/multerConfig");
 
 
 // All routes require authentication
@@ -57,10 +58,28 @@ router.get("/progress", giziController.getProgress);
 router.get("/hari/:hariKe", giziController.getDailyRecommendation);
 
 /**
+ * @route   GET /api/anak/:anakId/gizi/makanan/:detailId
+ * @desc    Get specific food detail
+ * @access  Private
+ */
+router.get("/makanan/:detailId", giziController.getDetailMakanan);
+
+/**
  * @route   PATCH /api/anak/:anakId/gizi/makanan/:detailId
  * @desc    Update food consumption status
  * @access  Private
  */
 router.patch("/makanan/:detailId", giziController.updateMakananStatus);
+
+/**
+ * @route   POST /api/anak/:anakId/gizi/makanan/:detailId/image
+ * @desc    Upload food image for a specific meal
+ * @access  Private
+ */
+router.post(
+  "/makanan/:detailId/image",
+  upload.single("image"),
+  giziController.uploadImage
+);
 
 module.exports = router;

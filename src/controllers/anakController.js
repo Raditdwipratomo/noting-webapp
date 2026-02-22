@@ -134,6 +134,24 @@ class AnakController {
         req.body,
       );
 
+      // If tanggal_lahir was updated, recalculate stunting diagnosis
+      // because age affects Z-score calculations
+      if (req.body.tanggal_lahir) {
+        const latestPertumbuhan = await PertumbuhanService.getLatest(anakId);
+        if (latestPertumbuhan) {
+          const diagnosaResult =
+            await StuntingDetectionService.detectStunting(
+              latestPertumbuhan,
+              updatedAnak,
+            );
+          await StuntingDetectionService.saveDiagnosa(
+            anakId,
+            latestPertumbuhan.id_pertumbuhan,
+            diagnosaResult,
+          );
+        }
+      }
+
       return successResponse(
         res,
         updatedAnak,
