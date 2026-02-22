@@ -32,6 +32,29 @@ module.exports = (sequelize, DataTypes) => {
         ),
         allowNull: false,
       },
+      nama_makanan: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+        comment: "Nama makanan dari AI recommendation",
+      },
+      porsi: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "",
+        comment: "Porsi makanan, misal: 1 mangkok",
+      },
+      gambar_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: "Path atau URL gambar makanan hasil upload",
+      },
+      target_kalori: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+        comment: "Target kalori per waktu makan dari AI",
+      },
       status_konsumsi: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
@@ -74,11 +97,16 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "CASCADE",
     });
 
-    DetailMakananHarian.belongsTo(models.ReminderMakanan, {
-    foreignKey: "id_reminder",
-    as: "reminder"
-  });
+    DetailMakananHarian.hasOne(models.ResepMakanan, {
+      foreignKey: "id_detail_makanan",
+      as: "resep_makanan",
+      onDelete: "CASCADE",
+    });
 
+    DetailMakananHarian.belongsTo(models.ReminderMakanan, {
+      foreignKey: "id_reminder",
+      as: "reminder"
+    });
   };
 
   return DetailMakananHarian;

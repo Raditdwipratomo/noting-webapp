@@ -18,6 +18,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+// Serve static files from images directory
+const path = require("path");
+app.use("/images", express.static(path.join(__dirname, "../images")));
+
 // Routes
 app.use("/api", require("./routes"));
 

@@ -63,6 +63,7 @@ db.DetailMakananHarian = safeLoadModel(
 db.NutrisiMakanan = safeLoadModel("NutrisiMakanan", "./NutrisiMakanan");
 db.ReminderMakanan = safeLoadModel("ReminderMakan", "./ReminderMakanan");
 db.AlergiAnak = safeLoadModel("AlergiAnak", "./AlergiAnak");
+db.ResepMakanan = safeLoadModel("ResepMakanan", "./ResepMakanan");
 
 // Define associations
 Object.keys(db).forEach((modelName) => {

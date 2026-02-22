@@ -9,6 +9,8 @@ const {
   DetailMakananHarian,
   RencanaGiziMingguan,
   RekomendasiHarian,
+  NutrisiMakanan,
+  ResepMakanan,
   Anak,
 } = require("../models");
 const GiziRecommendationService = require("../services/giziRecommendationService");
@@ -151,6 +153,10 @@ class GiziController {
               {
                 model: DetailMakananHarian,
                 as: "detail_makanan_harian",
+                include: [
+                  { model: NutrisiMakanan, as: "nutrisi_makanan" },
+                  { model: ResepMakanan, as: "resep_makanan" },
+                ],
               },
             ],
           },
@@ -232,7 +238,14 @@ class GiziController {
 
       const rekomendasi = await RekomendasiHarian.findOne({
         where: { anak_id: anakId, hari_ke: parseInt(hariKe) },
-        include: [{ model: DetailMakananHarian, as: "detail_makanan_harian" }],
+        include: [{
+          model: DetailMakananHarian,
+          as: "detail_makanan_harian",
+          include: [
+            { model: NutrisiMakanan, as: "nutrisi_makanan" },
+            { model: ResepMakanan, as: "resep_makanan" },
+          ],
+        }],
       });
 
       if (!rekomendasi) {
@@ -282,7 +295,14 @@ class GiziController {
             [Op.between]: [start, end],
           },
         },
-        include: [{ model: DetailMakananHarian, as: "detail_makanan_harian" }],
+        include: [{
+          model: DetailMakananHarian,
+          as: "detail_makanan_harian",
+          include: [
+            { model: NutrisiMakanan, as: "nutrisi_makanan" },
+            { model: ResepMakanan, as: "resep_makanan" },
+          ],
+        }],
       });
 
       if (!rekomendasi) {
@@ -483,6 +503,129 @@ class GiziController {
         res,
         rencana,
         "Rencana gizi berhasil ditandai selesai",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Upload food image
+   * POST /anak/:anakId/gizi/makanan/:detailId/image
+   */
+  async uploadImage(req, res, next) {
+    try {
+      const { anakId, detailId } = req.params;
+      const userId = req.user.user_id;
+
+      // 1. Validate user authorization
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      // 2. Validate DetailMakananHarian exists
+      const detail = await DetailMakananHarian.findByPk(detailId);
+      if (!detail) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Detail makanan tidak ditemukan",
+        });
+      }
+
+      // 3. Check if file exists in request
+      if (!req.file) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: "Tidak ada file gambar yang diunggah",
+        });
+      }
+
+      // 4. Update the Database with the new URL
+      // (The file is already saved to disk by the Multer middleware)
+      const imageUrl = `/images/makanan/${req.file.filename}`;
+      await detail.update({ gambar_url: imageUrl });
+
+      return successResponse(
+        res,
+        {
+          detail_id: detailId,
+          gambar_url: imageUrl,
+        },
+        "Gambar makanan berhasil diunggah",
+      );
+    } catch (error) {
+      // Clean up the uploaded file if database update fails
+      if (req.file && req.file.path) {
+        const fs = require('fs');
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error("Failed to delete orphaned image:", err);
+        });
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * Get specific Detail Makanan Harian
+   * GET /anak/:anakId/gizi/makanan/:detailId
+   */
+  async getDetailMakanan(req, res, next) {
+    try {
+      const { anakId, detailId } = req.params;
+      const userId = req.user.user_id;
+
+      const anak = await AnakService.getAnakByAnakId(anakId, userId);
+      if (anak.user_id !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke data anak ini",
+        });
+      }
+
+      const detail = await DetailMakananHarian.findOne({
+        where: { id_detail: detailId },
+        include: [
+          {
+            model: NutrisiMakanan,
+            as: "nutrisi_makanan",
+          },
+          {
+            model: ResepMakanan,
+            as: "resep_makanan",
+          },
+        ],
+      });
+
+      if (!detail) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: "Detail makanan tidak ditemukan",
+        });
+      }
+
+      // Lazy image generation: if no local image, generate one via Hugging Face
+      if (!detail.gambar_url || detail.gambar_url.startsWith('http')) {
+        try {
+          const { generateFoodImage } = require("../services/imageGenerationService");
+          const localImagePath = await generateFoodImage(detail.nama_makanan);
+          if (localImagePath) {
+            await detail.update({ gambar_url: localImagePath });
+            detail.gambar_url = localImagePath;
+          }
+        } catch (imgError) {
+          console.error("[LazyImageGen] Failed:", imgError.message);
+          // Non-blocking: continue serving the detail without image
+        }
+      }
+
+      return successResponse(
+        res,
+        detail,
+        "Detail makanan berhasil diambil",
       );
     } catch (error) {
       next(error);
