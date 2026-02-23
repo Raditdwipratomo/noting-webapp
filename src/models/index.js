@@ -61,7 +61,7 @@ db.DetailMakananHarian = safeLoadModel(
   "./DetailMakananHarian",
 );
 db.NutrisiMakanan = safeLoadModel("NutrisiMakanan", "./NutrisiMakanan");
-db.ReminderMakanan = safeLoadModel("ReminderMakan", "./ReminderMakanan");
+db.Reminder = safeLoadModel("Reminder", "./Reminder");
 db.AlergiAnak = safeLoadModel("AlergiAnak", "./AlergiAnak");
 db.ResepMakanan = safeLoadModel("ResepMakanan", "./ResepMakanan");
 

@@ -343,6 +343,7 @@ class StuntingDetectionService {
               "berat_badan_kg",
               "tinggi_badan_cm",
               "lingkar_lengan_atas_cm",
+              "lingkar_kepala_cm",
             ],
           },
         ],
