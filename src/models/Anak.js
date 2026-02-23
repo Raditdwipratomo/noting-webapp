@@ -120,7 +120,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "CASCADE",
     });
 
-    Anak.hasMany(models.ReminderMakanan, {
+    Anak.hasMany(models.Reminder, {
       foreignKey: "anak_id",
       as: "reminder",
       onDelete: "CASCADE",
