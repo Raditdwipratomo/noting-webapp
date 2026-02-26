@@ -103,7 +103,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: "CASCADE",
     });
 
-    DetailMakananHarian.belongsTo(models.ReminderMakanan, {
+    DetailMakananHarian.belongsTo(models.Reminder, {
       foreignKey: "id_reminder",
       as: "reminder"
     });

@@ -64,6 +64,9 @@ db.NutrisiMakanan = safeLoadModel("NutrisiMakanan", "./NutrisiMakanan");
 db.Reminder = safeLoadModel("Reminder", "./Reminder");
 db.AlergiAnak = safeLoadModel("AlergiAnak", "./AlergiAnak");
 db.ResepMakanan = safeLoadModel("ResepMakanan", "./ResepMakanan");
+db.Post = safeLoadModel("Post", "./Post");
+db.Like = safeLoadModel("Like", "./Like");
+db.Comment = safeLoadModel("Comment", "./Comment");
 
 // Define associations
 Object.keys(db).forEach((modelName) => {

@@ -220,7 +220,6 @@ class AlergiService {
 
     return true;
   }
-
 }
 
 module.exports = new AlergiService();
