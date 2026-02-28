@@ -3,13 +3,13 @@ const { sequelize, Post, Comment, Like, User } = require("../models");
 
 class CommunityService {
   // ================================
-  // CREATE POST
+  // CREATE POST (MULTI IMAGE READY)
   // ================================
-  static async createPost({ userId, content, imageUrl = null }) {
+  static async createPost({ userId, content, imageUrls = [] }) {
     return await Post.create({
       user_id: userId,
       content,
-      image_url: imageUrl,
+      image_url: imageUrls.length ? JSON.stringify(imageUrls) : null,
     });
   }
 
@@ -33,11 +33,21 @@ class CommunityService {
       offset,
     });
 
+    // 🔥 parse images supaya frontend enak
+    const rows = posts.rows.map((post) => {
+      const plain = post.toJSON();
+
+      return {
+        ...plain,
+        image_urls: plain.image_url ? JSON.parse(plain.image_url) : [],
+      };
+    });
+
     return {
       total: posts.count,
       page,
       limit,
-      rows: posts.rows,
+      rows,
     };
   }
 
@@ -61,10 +71,9 @@ class CommunityService {
           user_id: userId,
           post_id: postId,
         },
-        { transaction: t },
+        { transaction: t }
       );
 
-      // 🔥 atomic increment
       await Post.increment("like_count", {
         by: 1,
         where: { id: postId },
@@ -111,7 +120,7 @@ class CommunityService {
           post_id: postId,
           content,
         },
-        { transaction: t },
+        { transaction: t }
       );
 
       await Post.increment("comment_count", {
@@ -139,7 +148,7 @@ class CommunityService {
           parent_id: parentId,
           content,
         },
-        { transaction: t },
+        { transaction: t }
       );
 
       await Post.increment("comment_count", {
@@ -153,7 +162,7 @@ class CommunityService {
   }
 
   // ================================
-  // GET COMMENTS TREE (simple)
+  // GET COMMENTS TREE
   // ================================
   static async getComments(postId) {
     return await Comment.findAll({

@@ -4,6 +4,7 @@ const router = express.Router();
 // Import all route modules
 const authRoutes = require("./authRoutes");
 const anakRoutes = require("./anakRoutes");
+const communityRoutes = require("./communityRoutes");
 
 
 /**
@@ -82,6 +83,8 @@ router.use("/auth", authRoutes);
  *   DELETE /:anakId/alergi/:id     - Delete allergy
  */
 router.use("/anak", anakRoutes);
+
+router.use("/community", communityRoutes);
 
 // ========================================
 // Health Check (optional)
